@@ -1,0 +1,21 @@
+# Dependências e saídas locais
+node_modules/
+**/node_modules/
+coverage/
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Dados sensíveis, configurações privadas
+.env
+**/.env
+.env.*
+**/.env.*
+!.env.example
+!**/.env.example
+
+# Arquivos de editor ou distribuição
+.idea/
+.vscode/
+*.zip
