@@ -100,9 +100,7 @@
     elements.updated.textContent = 'Atualizando…';
     renderRows();
     try {
-      const response = await fetch('/api/dashboard', { headers: { Accept: 'application/json' }, cache: 'no-store' });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
+      const data = await api('/api/dashboard', { cache: 'no-store' });
       if (!isValidDashboard(data)) {
         throw new Error('Resposta fora do contrato da API');
       }
