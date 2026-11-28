@@ -27,8 +27,8 @@
       <div class="sidebar-caption sidebar-caption-secondary">MÓDULOS DA EQUIPE</div>
       <a class="nav-entry nav-link-module" href="/fornecedores.html">▣ <span>Fornecedores</span></a>
       <a class="nav-entry nav-link-module" href="/produtos.html">◫ <span>Produtos</span></a>
-      <div class="nav-entry nav-entry-pending" title="Implementação sob responsabilidade dos outros integrantes">↔ <span>Movimentações</span><small>Em breve</small></div>
-      <div class="sidebar-bottom">Projeto acadêmico · IntelliStock Web</div>
+      <a class="nav-entry nav-link-module" href="/movimentacoes.html">↔ <span>Movimentações</span></a>
+      <div class="sidebar-bottom"><button class="logout-button" type="button" data-logout>Sair</button></div>
     </aside>
 
     <main class="main-content">
@@ -47,6 +47,7 @@
       <div class="status-line">
         <span id="dataSource" class="source-tag">Verificando dados…</span>
         <span id="lastUpdated" class="timestamp" aria-live="polite">Nenhuma atualização</span>
+        <span id="mockNotice" class="timestamp" hidden>Cadastros e movimentações requerem o modo PostgreSQL.</span>
       </div>
       <div id="errorBox" class="alert alert-danger d-none" role="alert"></div>
 
@@ -54,7 +55,7 @@
         <article class="metric-card">
           <div class="metric-heading"><span>Total de produtos</span><span class="metric-icon metric-icon-blue" aria-hidden="true">▦</span></div>
           <strong id="totalProducts" class="metric-value" aria-live="polite">—</strong>
-          <div class="metric-note">Produtos cadastrados na base</div>
+          <div class="metric-note">Produtos ativos na base</div>
         </article>
         <article class="metric-card">
           <div class="metric-heading"><span>Abaixo do mínimo</span><span class="metric-icon metric-icon-amber" aria-hidden="true">!</span></div>
@@ -92,7 +93,6 @@
           </table>
         </div>
       </section>
-      <footer class="app-footer">IntelliStock Web · Dashboard desenvolvido por João Gabriel · Os demais módulos serão integrados pela equipe.</footer>
     </main>
   </div>
 </body>

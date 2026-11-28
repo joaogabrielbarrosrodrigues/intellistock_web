@@ -14,3 +14,34 @@ async function api(url, options = {}) {
   }
   return data;
 }
+
+let confirmacaoSaida;
+
+document.addEventListener('click', event => {
+  if (!event.target.closest('[data-logout]')) return;
+
+  if (!confirmacaoSaida) {
+    confirmacaoSaida = document.createElement('dialog');
+    confirmacaoSaida.className = 'logout-dialog';
+    confirmacaoSaida.setAttribute('aria-labelledby', 'logoutTitle');
+    confirmacaoSaida.innerHTML = `
+      <h2 id="logoutTitle">Sair da conta</h2>
+      <p>Você realmente deseja sair?</p>
+      <div class="logout-actions">
+        <button type="button" class="btn btn-outline-secondary" data-cancel-logout>Cancelar</button>
+        <button type="button" class="btn btn-primary" data-confirm-logout>Sair</button>
+      </div>`;
+    confirmacaoSaida.addEventListener('click', dialogEvent => {
+      if (dialogEvent.target.closest('[data-cancel-logout]')) {
+        confirmacaoSaida.close();
+      }
+      if (dialogEvent.target.closest('[data-confirm-logout]')) {
+        sessionStorage.removeItem('intellistockToken');
+        location.href = '/login.html';
+      }
+    });
+    document.body.append(confirmacaoSaida);
+  }
+
+  if (!confirmacaoSaida.open) confirmacaoSaida.showModal();
+});

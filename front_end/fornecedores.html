@@ -27,8 +27,8 @@
       <div class="sidebar-caption sidebar-caption-secondary">MÓDULOS DA EQUIPE</div>
       <a class="nav-entry nav-link-module nav-entry-active" href="/fornecedores.html" aria-current="page">▣ <span>Fornecedores</span></a>
       <a class="nav-entry nav-link-module" href="/produtos.html">◫ <span>Produtos</span></a>
-      <div class="nav-entry nav-entry-pending" title="Implementação sob responsabilidade dos outros integrantes">↔ <span>Movimentações</span><small>Em breve</small></div>
-      <div class="sidebar-bottom">Projeto acadêmico · IntelliStock Web</div>
+      <a class="nav-entry nav-link-module" href="/movimentacoes.html">↔ <span>Movimentações</span></a>
+      <div class="sidebar-bottom"><button class="logout-button" type="button" data-logout>Sair</button></div>
     </aside>
 
     <main class="main-content" data-module="fornecedores">
@@ -42,5 +42,4 @@
       <section class="content-card"><div class="section-header"><div><h2>Lista de fornecedores</h2><p>Consulte e atualize os registros.</p></div><span id="contador" class="section-counter"></span></div>
       <form id="filtros" class="d-flex flex-wrap gap-2 px-4 pb-3"><input id="busca" type="search" class="form-control w-auto" placeholder="Buscar pelo nome" maxlength="100" aria-label="Buscar"><button class="btn btn-outline-primary">Buscar</button></form>
       <div class="table-responsive"><table class="table stock-table align-middle mb-0"><thead><tr><th scope="col">Nome</th><th scope="col">CNPJ</th><th scope="col">Telefone</th><th scope="col">E-mail</th><th scope="col">Produtos</th><th scope="col">Ações</th></tr></thead><tbody id="lista"><tr><td colspan="6">Carregando…</td></tr></tbody></table></div></section>
-      <footer class="app-footer">IntelliStock Web · Gestão de estoque</footer>
     </main></div></body></html>

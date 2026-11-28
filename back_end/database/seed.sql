@@ -46,7 +46,7 @@ INSERT INTO seed_parametros VALUES
 (5, 500, 6.5, -0.20),
 (6, 620, 9.0,  0.20),
 (7, 200, 1.5,  0.00),
-(8,  40, 0.4,  0.00),
+(8,  60, 0.4,  0.00), -- 58 saídas de pelo menos 1 fardo deixam saldo final 2
 (9, 125, 1.8,  0.10),
 (10, 320, 3.5, 0.00);
 -- O produto 11 (Guardanapo) fica sem movimentações e sem estoque.

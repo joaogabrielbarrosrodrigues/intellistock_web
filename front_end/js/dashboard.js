@@ -10,6 +10,7 @@
     below: document.getElementById('belowMinimum'),
     percentage: document.getElementById('stockPercentage'),
     source: document.getElementById('dataSource'),
+    mockNotice: document.getElementById('mockNotice'),
     updated: document.getElementById('lastUpdated'),
     error: document.getElementById('errorBox'),
     counter: document.getElementById('itemsCounter'),
@@ -21,6 +22,7 @@
   let records = [];
   let loadState = 'loading';
   const integer = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 });
+  const quantity = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 3 });
 
   function isValidDashboard(data) {
     return data &&
@@ -71,11 +73,11 @@
     const fragment = document.createDocumentFragment();
     for (const item of visible) {
       const tr = document.createElement('tr');
-      const deficit = Math.max(0, item.estoqueMinimo - item.quantidade);
+      const deficit = item.estoqueMinimo - item.quantidade;
       tr.appendChild(makeCell(item.nome, 'product-name'));
-      tr.appendChild(makeCell(integer.format(item.quantidade), 'quantity'));
-      tr.appendChild(makeCell(integer.format(item.estoqueMinimo)));
-      tr.appendChild(makeCell(integer.format(deficit), 'deficit'));
+      tr.appendChild(makeCell(quantity.format(item.quantidade), 'quantity'));
+      tr.appendChild(makeCell(quantity.format(item.estoqueMinimo)));
+      tr.appendChild(makeCell(quantity.format(deficit), 'deficit'));
       const status = document.createElement('td');
       const pill = document.createElement('span');
       pill.className = 'status-pill';
@@ -97,6 +99,7 @@
     elements.percentage.textContent = '—';
     elements.source.textContent = 'Verificando dados…';
     elements.source.classList.remove('demo');
+    elements.mockNotice.hidden = true;
     elements.updated.textContent = 'Atualizando…';
     renderRows();
     try {
@@ -112,8 +115,9 @@
       const healthy = data.totalProdutos === 0 ? null : Math.max(0, (data.totalProdutos - records.length) / data.totalProdutos * 100);
       elements.percentage.textContent = healthy === null ? '—' : `${integer.format(Math.round(healthy))}%`;
       const mock = data.source === 'mock';
-      elements.source.textContent = mock ? 'Modo demonstração · dados simulados' : data.source === 'postgres' ? 'Conectado ao PostgreSQL' : 'Origem de dados não identificada';
+      elements.source.textContent = mock ? 'Modo demonstração · dados simulados' : 'Conectado ao PostgreSQL';
       elements.source.classList.toggle('demo', mock);
+      elements.mockNotice.hidden = !mock;
       elements.updated.textContent = `Atualizado em ${new Date(data.geradoEm).toLocaleString('pt-BR')}`;
       renderRows();
     } catch (error) {

@@ -5,17 +5,12 @@
 -- Antes de executar, crie o banco (ou use "npm run db:setup"):
 --   CREATE DATABASE intellistock_web;
 --
--- ATENÇÃO: este script APAGA as tabelas existentes e as recria.
+-- Cria as tabelas que faltam e complementa a versão inicial do Caio
+-- (db/schema.sql), preservando os dados existentes.
 -- =============================================================
 
-DROP TABLE IF EXISTS movimentacoes CASCADE;
-DROP TABLE IF EXISTS contas_pagar CASCADE;
-DROP TABLE IF EXISTS produtos CASCADE;
-DROP TABLE IF EXISTS fornecedores CASCADE;
-DROP TABLE IF EXISTS usuarios CASCADE;
-
 -- Usuários que acessam o sistema
-CREATE TABLE usuarios (
+CREATE TABLE IF NOT EXISTS usuarios (
     id          SERIAL PRIMARY KEY,
     nome        VARCHAR(120) NOT NULL,
     email       VARCHAR(180) NOT NULL UNIQUE,
@@ -24,7 +19,7 @@ CREATE TABLE usuarios (
 );
 
 -- Fornecedores dos produtos e credores das contas a pagar
-CREATE TABLE fornecedores (
+CREATE TABLE IF NOT EXISTS fornecedores (
     id          SERIAL PRIMARY KEY,
     nome        VARCHAR(150) NOT NULL,
     cnpj        CHAR(14) UNIQUE,              -- somente dígitos, opcional
@@ -34,7 +29,7 @@ CREATE TABLE fornecedores (
 );
 
 -- Produtos controlados no estoque
-CREATE TABLE produtos (
+CREATE TABLE IF NOT EXISTS produtos (
     id              SERIAL PRIMARY KEY,
     nome            VARCHAR(150)  NOT NULL,
     descricao       VARCHAR(500),
@@ -49,10 +44,11 @@ CREATE TABLE produtos (
     atualizado_em   TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_produtos_nome ON produtos (nome);
+CREATE INDEX IF NOT EXISTS idx_produtos_nome ON produtos (nome);
+CREATE INDEX IF NOT EXISTS idx_produtos_fornecedor ON produtos (fornecedor_id);
 
 -- Extrato do estoque: cada entrada ou saída de produto
-CREATE TABLE movimentacoes (
+CREATE TABLE IF NOT EXISTS movimentacoes (
     id                SERIAL PRIMARY KEY,
     produto_id        INTEGER       NOT NULL REFERENCES produtos(id) ON DELETE RESTRICT,
     tipo              VARCHAR(7)    NOT NULL CHECK (tipo IN ('ENTRADA','SAIDA')),
@@ -63,12 +59,12 @@ CREATE TABLE movimentacoes (
     usuario_id        INTEGER REFERENCES usuarios(id) ON DELETE SET NULL
 );
 
-CREATE INDEX idx_movimentacoes_produto_data ON movimentacoes (produto_id, data);
-CREATE INDEX idx_movimentacoes_tipo_data    ON movimentacoes (tipo, data);
+CREATE INDEX IF NOT EXISTS idx_movimentacoes_produto_data ON movimentacoes (produto_id, data);
+CREATE INDEX IF NOT EXISTS idx_movimentacoes_tipo_data    ON movimentacoes (tipo, data);
 
 -- Contas a pagar aos fornecedores
 -- O status "VENCIDA" não é gravado: é calculado (PENDENTE com vencimento no passado).
-CREATE TABLE contas_pagar (
+CREATE TABLE IF NOT EXISTS contas_pagar (
     id               SERIAL PRIMARY KEY,
     fornecedor_id    INTEGER       NOT NULL REFERENCES fornecedores(id) ON DELETE RESTRICT,
     descricao        VARCHAR(255)  NOT NULL,
@@ -82,5 +78,35 @@ CREATE TABLE contas_pagar (
     atualizado_em    TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_contas_pagar_vencimento ON contas_pagar (data_vencimento);
-CREATE INDEX idx_contas_pagar_status     ON contas_pagar (status);
+CREATE INDEX IF NOT EXISTS idx_contas_pagar_vencimento ON contas_pagar (data_vencimento);
+CREATE INDEX IF NOT EXISTS idx_contas_pagar_status     ON contas_pagar (status);
+
+-- A primeira versão armazenava quantidades inteiras e não vinculava
+-- movimentações a usuários. Movimentações antigas continuam válidas com NULL.
+ALTER TABLE movimentacoes
+    ADD COLUMN IF NOT EXISTS usuario_id INTEGER REFERENCES usuarios(id) ON DELETE SET NULL;
+
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = current_schema()
+          AND table_name = 'produtos' AND column_name = 'quantidade' AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE produtos
+            ALTER COLUMN quantidade TYPE NUMERIC(15,3),
+            ALTER COLUMN estoque_minimo TYPE NUMERIC(15,3),
+            ALTER COLUMN preco TYPE NUMERIC(15,2);
+    END IF;
+
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = current_schema()
+          AND table_name = 'movimentacoes' AND column_name = 'quantidade' AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE movimentacoes
+            ALTER COLUMN quantidade TYPE NUMERIC(15,3),
+            ALTER COLUMN saldo_resultante TYPE NUMERIC(15,3);
+    END IF;
+END
+$$;

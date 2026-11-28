@@ -10,7 +10,16 @@ async function resumoEstoque() {
            COUNT(*) FILTER (WHERE ativo AND quantidade > 0 AND quantidade <= estoque_minimo) AS "estoqueBaixo",
            COUNT(*) FILTER (WHERE ativo AND quantidade > estoque_minimo)               AS "estoqueNormal",
            COALESCE(ROUND(SUM(quantidade * preco) FILTER (WHERE ativo), 2), 0)         AS "valorEmEstoque",
-           (SELECT COUNT(*) FROM fornecedores)                                         AS fornecedores
+           (SELECT COUNT(*) FROM fornecedores)                                         AS fornecedores,
+           COALESCE(
+             JSON_AGG(
+               JSON_BUILD_OBJECT(
+                 'id', id, 'nome', nome, 'unidadeMedida', unidade_medida,
+                 'quantidade', quantidade, 'estoqueMinimo', estoque_minimo
+               ) ORDER BY (estoque_minimo - quantidade) DESC, nome ASC, id ASC
+             ) FILTER (WHERE ativo AND quantidade < estoque_minimo),
+             '[]'::json
+           ) AS "produtosAbaixoMinimo"
     FROM produtos`);
   return rows[0];
 }
@@ -76,19 +85,6 @@ async function movimentacaoMensal(meses) {
   return rows;
 }
 
-/**
- * Produtos ativos com saldo ABAIXO do mínimo (quantidade < estoque_minimo),
- * ordenados pelo maior déficit (contrato do dashboard do João Gabriel).
- */
-async function produtosAbaixoMinimo() {
-  const { rows } = await db.query(`
-    SELECT id, nome, unidade_medida AS "unidadeMedida", quantidade, estoque_minimo AS "estoqueMinimo"
-    FROM produtos
-    WHERE ativo AND quantidade < estoque_minimo
-    ORDER BY (estoque_minimo - quantidade) DESC, nome ASC`);
-  return rows;
-}
-
 module.exports = {
-  resumoEstoque, resumoFinanceiro, contasEmDestaque, movimentacoesRecentes, movimentacaoMensal, produtosAbaixoMinimo,
+  resumoEstoque, resumoFinanceiro, contasEmDestaque, movimentacoesRecentes, movimentacaoMensal,
 };
